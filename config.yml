@@ -1,0 +1,6 @@
+- github:
+    user: appfog
+    repo: afdocs
+  assets:
+    path: assets
+    bucket: afdocs
