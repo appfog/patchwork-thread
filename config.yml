@@ -1,6 +1,9 @@
 - github:
     user: appfog
     repo: afdocs
+    credentials:
+      username: joebadmo
   assets:
     path: assets
-    bucket: afdocs
+    S3:
+      bucket: appfog-docs
