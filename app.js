@@ -52,7 +52,7 @@ app.get('/index/:part/:user/:repo', function(req, res){
             console.log(err);
             res.send(err);
         }else{
-            res.send('updating');
+            res.send('Update request received');
             async.parallel([
                 function(callback){
                     if(parts.content){
