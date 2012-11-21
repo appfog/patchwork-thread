@@ -52,6 +52,7 @@ app.get('/index/:part/:user/:repo', function(req, res){
             console.log(err);
             res.send(err);
         }else{
+            res.send('updating');
             async.parallel([
                 function(callback){
                     if(parts.content){
@@ -74,7 +75,7 @@ app.get('/index/:part/:user/:repo', function(req, res){
                 },
                 function(callback){
                     if(parts.assets){
-                        handleAssets(conf, callback);
+                        asset.updateAssetDir(conf.assets.path, conf, callback);
                     }else{
                         callback(null);
                     }
@@ -84,7 +85,6 @@ app.get('/index/:part/:user/:repo', function(req, res){
                     console.log(err);
                 }
                 console.log('done');
-                res.send('done');
             });
         }
     });
@@ -124,25 +124,6 @@ function indexContent(conf, callback){
             }
         });
     }, callback);
-};
-
-function handleAssets(conf, callback){
-    asset.getAssetList(conf.assets.path, conf, function(err, assetArr){
-        if(err){
-            console.log(err);
-        }else{
-            async.forEachSeries(assetArr, function(item, forCallback){
-                asset.updateAsset(item.path, conf, forCallback);
-            }, function(err){
-                if(err){
-                    console.log(err);
-                }else{
-                    console.log('Assets updated to S3');
-                }
-                callback(null);
-            });
-        }
-    });
 };
 
 app.listen(process.env.VCAP_APP_PORT || 4000);
