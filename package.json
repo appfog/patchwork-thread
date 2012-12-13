@@ -1,13 +1,20 @@
 {
- "name":"afdocs-seachify-indexer",
+ "name":"patchwork-thread",
   "version":"0.0.1",
   "dependencies":{
 	  "async":"",
       "express":"",
+	  "js-yaml":"",
+      "knox":"",
 	  "mongoose":"",
+	  "nodeunit":"",
 	  "octonode":"",
+	  "pagedown":"",
 	  "request":"",
 	  "restify":"",
-	  "yamlparser":""
+	  "underscore.string":""
+  },
+  "scripts": {
+      "start": "node app.js"
   }
 }

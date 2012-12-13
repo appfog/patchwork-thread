@@ -1,0 +1,23 @@
+- github:                                           # required
+    user: joebadmo                                  # required
+    repo: patchwork                                 # required # everything below is optional, with the defaults shown
+    credentials:
+      username: joebadmo                            # defaults to the github user above
+      password_env_var: GITHUB_PASSWORD             # used for API call auth (you'll get rate limited with no auth)
+  rootPath: '/'
+  db: joebadmo-patchwork                            # defaults to github.user + '-' + github.repo
+  assets: 
+    path: assets
+    S3:
+      access_key_env_var: S3_ACCESS_KEY
+      secret_env_var: S3_SECRET
+      bucket: joebadmo-patchwork                    # defaults to github.user + '-' + github.repo
+  searchify:
+    url: null
+    private_api_env_var: SEARCHIFY_PRIVATE_API_URL
+    index: joebadmo-patchwork                       # defaults to github.user + '-' + github.repo
+  blog: blog
+
+- github:                                           # you can set multiple confs
+    user: joebadmo
+    repo: afdocs

@@ -16,6 +16,7 @@
     url: null
     private_api_env_var: SEARCHIFY_PRIVATE_API_URL
     index: joebadmo-patchwork               # defaults to github.user + '-' + github.repo
+  blog: blog
 
 - github:                                   # you can set multiple confs
     user: joebadmo

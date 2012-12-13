@@ -1,30 +1,39 @@
-Indexer
-=======
+Thread
+======
 
-This is an app that takes a collection of markdown files in a simple hierarchical directory structure, parses them into HTML, then populates or updates an indextank search index and a MongoDB. 
+Thread is the data access and update piece of [Patchwork](http://patchworkcms.com). 
 
-Inspired by [Jekyll](https://github.com/mojombo/jekyll), I wanted to build a simple, file-based, git-backed CMS. File-based because I like to edit text in Vim, git-backed because I like the idea of version control for content. I also wanted to decouple the content-management part from the content-presentation part. I wanted the content to live by itself in a repository so that anyone with access to the repo could contribute without having to know anything about how the CMS works (which is not necessarily the case with Jekyll).
+You use Thread by pointing it at a content repository in GitHub like [this one](https://github.com/joebadmo/patchwork). It then grabs each markdown file, parses it, and updates a database and (optionally) an IndexTank API-compatible search index. It will also optionally upload assets to an Amazon S3 bucket. 
 
-### How it works
+You can also set a [post-receive webhook](https://help.github.com/articles/post-receive-hooks) for a content repo on GitHub so that Thread will keep your database, search index, and S3 bucket whenever you commit changes to the content repo. 
 
-The entire CMS consists of three parts: 
+### Usage
 
-1. The content repository (in GitHub).
-2. Indexer (this app).
-3. The front-end.
+Note: The canonical deployment for Patchwork is on [AppFog](http://www.appfog.com).
 
-To connect them, you simply add the content GitHub repo to Indexer's `config.json` file. At this point, you can hit Indexer's `/index` URL, and Indexer will parse the markdown files, index them to an indextank search index, and populate a MongoDB. 
+#### 1. Clone this repo. 
+#### 2. Copy the `config.yml.example` file to `config.yml`.
 
-You can also give the content repo Indexer's `/pusher` URL as a post-receive hook. Then the repo will trigger Indexer to update the search index and MongoDB whenever you push a new commit.
+    $ cp config.yml.example config.yml
 
-The front-end app can then query the MongoDB to display the content. 
+#### 3. Modify `config.yml` to point at your content repo.
+#### 4. Push to AppFog.
 
-### How to use
+    $ af push patchwork-thread
 
-The `config.json` file contains an object called "config" which has an array containing any number of configurations. 
+#### 5. Create and bind a new MongoDB service to the new app.
 
-### Why not just use Jekyll?
+    $ af create-service mongodb --name joebadmo-patchwork --bind patchwork-thread
 
-Static files are nice and fast, but sometimes you want some dynamic content. Jekyll doesn't offer the flexibility for that. 
+#### 6. Add environment variables for your various credentials.
 
-Jekyll also doesn't allow you to separate the content from the static-site-generation. With those decoupled, you can use a service like [Prose.io](http://prose.io/) to point to a content repo and have a clean way to simply edit content.
+    $ af env-add patchwork-thread GITHUB_PASSWORD="FakePass1"
+    $ af env-add patchwork-thread S3_ACCESS_KEY="RANDOMSTRING"
+    $ af env-add patchwork-thread S3_SECRET="RANDOMSTRING"
+    $ af env-add patchwork-thread SEARCHIFY_PRIVATE_API_URL="http://:password@something.api.searchify.com"
+
+#### 7. Index your content repo.
+
+    $ curl patchwork-thread.aws.af.cm/index/all/joebadmo/patchwork
+
+#### 8. Now set up your [Quilt](https://github.com/joebadmo/patchwork-quilt).

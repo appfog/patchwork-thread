@@ -10,69 +10,61 @@ exports['test parseDir'] = function (test) {
     // test data
     var path = '',
         dataArray = [
-            {
-                path: '.dotfile',
-                type: 'file'
-            },
-            {
-                path: 'test1.markdown',
-                type: 'file'
-            },
-            {
-                path: 'test2.markdown',
-                type: 'file'
-            },
-            {
-                path: 'test3.md',
-                type: 'file'
-            },
-            {
-                path: 'testDir',
-                type: 'dir'
-            },
-            {
-                path: 'assets',
-                type: 'dir'
-            },
-            {
-                path: 'dir_to_ignore',
-                type: 'dir'
-            }
+            { path: '.dotfile',         type: 'file' }
+          , { path: 'test1.markdown',   type: 'file' }
+          , { path: 'test2.markdown',   type: 'file' }
+          , { path: 'test3.md',         type: 'file' }
+          , { path: 'READme.md',        type: 'file' }
+          , { path: 'testDir',          type: 'dir' }
+          , { path: 'assets',           type: 'dir' }
+          , { path: 'dir_to_ignore',    type: 'dir' }
+          , { path: 'blog',             type: 'dir' }
         ],
         dataArray2 = [
-            {
-                path: 'testDir/test4.md',
-                type: 'file'
-            }
+            { path: 'testDir/test4.md',         type: 'file' }
+          , { path: 'testDir/.nestedDotfile',   type: 'file' }
+          , { path: 'testDir/notFileOrDir',     type: 'fake' }
+        ],
+        blogDataArray = [
+            { path: 'blog/test-blog-post.md',   type: 'file' }
+          , { path: 'blog/.nestedDotfile',      type: 'file' }
+          , { path: 'blog/notFileOrDir',        type: 'fake' }
         ],
         conf = {
             github: {
                 ghrepo: {
                     contents: function(path, callback){
-                        if (path === 'testDir'){
+                        if(path === 'testDir'){
                             callback(null, dataArray2);
+                        }else if(path === 'blog'){
+                            callback(null, blogDataArray);
                         }else{
                             callback(null, dataArray);
                         }
                     }
                 }
             },
-            assets: 'assets',
-            ignoreDirs: ['dir_to_ignore']
+            assets: {
+                path: 'assets'
+            },
+            ignore: ['dir_to_ignore']
         },
         testContainer = [],
-        fileFunc = function(p, callback){
-            testContainer.push(p);
-            callback(null);
+        options = {
+            fileFunc: function(p, callback){
+                testContainer.push(p);
+                callback(null, p);
+            }
         };
 
-    test.expect(5);
-    content.parseDir(path, conf, fileFunc, function(err, rawContent){
-        test.equal(testContainer[0], 'test1.markdown');
-        test.equal(testContainer[1], 'test2.markdown');
-        test.equal(testContainer[2], 'test3.md');
-        test.equal(testContainer[3], 'testDir/test4.md');
-        test.equal(testContainer.length, 4);
+    test.expect(6);
+    content.parseDir(path, conf, options, function(err, rawContent){
+        test.equal(testContainer[0].path, 'test1.markdown');
+        test.equal(testContainer[1].path, 'test2.markdown');
+        test.equal(testContainer[2].path, 'test3.md');
+        test.equal(testContainer[3].path, 'testDir/test4.md');
+        test.equal(testContainer[4].path, 'blog/test-blog-post.md');
+        test.equal(testContainer.length, 5);
         test.done();
     });
 };
@@ -97,30 +89,20 @@ exports['test getContent'] = function (test) {
             }
         };
 
-    test.expect(4);
+    test.expect(2);
     content.getContent(path, conf, function(err, rawContent){
-        if(err){
-            console.log(err);
-        }else{
-            test.equal(rawContent.body, 'raw content');
-            test.equal(rawContent.isAsset, false);
-            content.getContent(path2, conf, function(err2, rawContent2){
-                if(err2){
-                    console.log(err2);
-                }else{
-                    test.equal(rawContent2.body, 'raw content');
-                    test.equal(rawContent2.isAsset, true);
-                    test.done();
-                }
-            });
-        }
+        test.equal(rawContent.body, 'raw content');
+    });
+    content.getContent(path2, conf, function(err2, rawContent2){
+        test.equal(rawContent2.body, 'raw content');
+        test.done();
     });
 };
 
 exports['test parseContent'] = function (test) {
     // test data
     var goodYamlFront = {
-            body: '---\ntitle: "Test Title 1"\nweight: 0\narbitrary: things\n---\n\nHello this is the content.\n\n### Hello\n\nMore content.\n\n### Anchor {#anchor}\n\nFinal.'
+            body: '---\ntitle: Test Title 1\nweight: 0\narbitrary: things\n---\n\nHello this is the content.\n\n### Hello\n\nMore content.\n\n### Anchor {#anchor}\n\nFinal.'
         },
         badYamlFront = {
             body: 'things'
@@ -131,12 +113,12 @@ exports['test parseContent'] = function (test) {
         test.equal(parsedObj.title, 'Test Title 1');
         test.equal(parsedObj.weight, 0);
         test.equal(parsedObj.arbitrary, 'things');
-        test.equal(parsedObj.content, '<p>Hello this is the content.</p>\n\n<h3>Hello</h3>\n\n<p>More content.</p>\n\n<h3 id="anchor">Anchor </h3>\n\n<p>Final.</p>');
-        content.parseContent(badYamlFront, function(err, parsedObj){
-            test.equal(typeof parsedObj, 'undefined');
-            test.equal(err, "Error parsing yaml front matter because of no match in file: ");
-            test.done();
-        });
+        test.equal(parsedObj.body, '<p>Hello this is the content.</p>\n\n<h3>Hello</h3>\n\n<p>More content.</p>\n\n<h3 id="anchor">Anchor </h3>\n\n<p>Final.</p>');
+    });
+    content.parseContent(badYamlFront, function(err, parsedObj){
+        test.equal(typeof parsedObj, 'undefined');
+        test.equal(err, "Error parsing yaml front matter because of no match in file: ");
+        test.done();
     });
 };
 
