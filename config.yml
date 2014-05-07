@@ -2,7 +2,7 @@
     user: appfog
     repo: afdocs
     credentials:
-      username: joebadmo
+      username: zacharyz
   assets:
     path: assets
     S3:
