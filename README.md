@@ -19,6 +19,7 @@ Note: The canonical deployment for Patchwork is on [AppFog](http://www.appfog.co
 #### 3. Modify `config.yml` to point at your content repo.
 #### 4. Push to AppFog.
 
+    $ npm install # Use a 0.8 version of NodeJS
     $ af push patchwork-thread
 
 #### 5. Create and bind a new MongoDB service to the new app.

@@ -117,4 +117,6 @@ function indexContent(conf, callback){
     content.parseDir(conf.rootPath, conf, options, callback);
 };
 
+console.log('ENV:', process.env);
+
 app.listen(process.env.VCAP_APP_PORT || 4000);
